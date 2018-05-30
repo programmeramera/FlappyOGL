@@ -7,6 +7,7 @@ using namespace Windows::ApplicationModel::Core;
 using namespace Windows::UI::Core;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
+using namespace Windows::UI::ViewManagement;
 
 
 namespace Angle {
@@ -29,7 +30,10 @@ namespace Angle {
 		}
 
 		// IFrameworkView Methods.
-		void Initialize(CoreApplicationView const &) { }
+		void Initialize(CoreApplicationView const &) { 
+			ApplicationView::PreferredLaunchViewSize(Size(480, 800));
+			ApplicationView::PreferredLaunchWindowingMode(ApplicationViewWindowingMode::PreferredLaunchViewSize);
+		}
 		void Load(hstring) { }
 		void Uninitialize() { }
 
