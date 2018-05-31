@@ -21,6 +21,8 @@ set (APP_MANIFEST_NAME Package.appxmanifest)
 
 set(EXE_NAME FlappyOGL)
 set(SHORT_NAME ${EXE_NAME})
+set(PACKAGE_NAME "se.coderox.FlappyOGL")
+set(PUBLISHER_NAME "coderox")
 set(PACKAGE_GUID "6515377e-dfd4-4cdb-80df-4e0326346efc")
 
 configure_file(
@@ -39,6 +41,8 @@ set(SOURCE_FILES
     source/SimpleRenderer.h
     source/pch.cpp
     source/pch.h
+    ${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME}
+    cmake/TemporaryKey.pfx
 )
 
 #set(COMMON_FILES
