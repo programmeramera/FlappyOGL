@@ -119,3 +119,5 @@ set_property(TARGET ${EXE_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
 
 target_link_libraries(${EXE_NAME} d3d11)
 target_link_libraries(${EXE_NAME} libGLESv2 libEGL)
+
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${EXE_NAME})
