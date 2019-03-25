@@ -3,7 +3,7 @@
 //
 
 #include "pch.h"
-#include "SimpleRenderer.h"
+#include "SpriteRenderer.h"
 #include "MathHelper.h"
 #include "OpenGLHelper.h"
 
@@ -11,7 +11,7 @@ using namespace Angle;
 
 #define STRING(s) #s
 
-SimpleRenderer::SimpleRenderer() :
+SpriteRenderer::SpriteRenderer() :
     mWindowWidth(0),
     mWindowHeight(0),
     mDrawCount(0)
@@ -110,7 +110,7 @@ SimpleRenderer::SimpleRenderer() :
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 }
 
-SimpleRenderer::~SimpleRenderer()
+SpriteRenderer::~SpriteRenderer()
 {
     if (mProgram != 0)
     {
@@ -137,7 +137,7 @@ SimpleRenderer::~SimpleRenderer()
     }
 }
 
-void SimpleRenderer::Draw()
+void SpriteRenderer::Draw()
 {
     glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -171,13 +171,13 @@ void SimpleRenderer::Draw()
     mDrawCount += 1;
 }
 
-void SimpleRenderer::UpdateWindowSize(GLsizei width, GLsizei height)
+void SpriteRenderer::UpdateWindowSize(GLsizei width, GLsizei height)
 {
     glViewport(0, 0, width, height);
     mWindowWidth = width;
     mWindowHeight = height;
 }
 
-void SimpleRenderer::UpdateRotation(int delta) {
+void SpriteRenderer::UpdateRotation(int delta) {
 	mDrawCount += delta;
 }

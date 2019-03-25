@@ -39,6 +39,10 @@ set(SOURCE_FILES
     source/OpenGLES.h
     source/SimpleRenderer.cpp
     source/SimpleRenderer.h
+    source/SpriteRenderer.cpp
+    source/SpriteRenderer.h
+    source/OpenGLHelper.cpp
+    source/OpenGLHelper.h
     source/pch.cpp
     source/pch.h
     ${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME}
