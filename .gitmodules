@@ -1,3 +1,6 @@
 [submodule "dependencies/angle"]
 	path = dependencies/angle
 	url = git@github.com:coderox/angle.git
+[submodule "dependencies/shared_resources"]
+	path = dependencies/shared_resources
+	url = git@github.com:coderox/shared_resources.git
