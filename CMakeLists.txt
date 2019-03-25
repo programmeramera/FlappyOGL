@@ -7,6 +7,8 @@ elseif(MSVC_VERSION GREATER 1600)
   set(COMPILER_VERSION "11")
 endif()
 
+set(CMAKE_CXX_FLAGS "/await")
+
 #Enable folders grouping in IDE
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 

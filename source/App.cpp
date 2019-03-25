@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "OpenGLES.h"
 #include "SimpleRenderer.h"
+#include "SpriteRenderer.h"
 
 using namespace winrt; 
 using namespace Windows::ApplicationModel::Core;
@@ -64,12 +65,16 @@ namespace Angle {
 					EGLint panelHeight = 0;
 					mOpenGLES->GetSurfaceDimensions(mEglSurface, &panelWidth, &panelHeight);
 
-					mCubeRenderer->UpdateWindowSize(panelWidth, panelHeight);
-					mCubeRenderer->Draw();
+					//mCubeRenderer->UpdateWindowSize(panelWidth, panelHeight);
+					//mCubeRenderer->Draw();
+
+					mSpriteRenderer->UpdateWindowSize(panelWidth, panelHeight);
+					mSpriteRenderer->Draw();
 
 					if (mOpenGLES->SwapBuffers(mEglSurface) != GL_TRUE)
 					{
-						mCubeRenderer.reset(nullptr);
+						//mCubeRenderer.reset(nullptr);
+						mSpriteRenderer.reset(nullptr);
 						CleanupEGL();
 
 						InitializeEGL(CoreWindow::GetForCurrentThread());
@@ -89,9 +94,13 @@ namespace Angle {
 
 		void RecreateRenderer()
 		{
-			if (!mCubeRenderer)
+			//if (!mCubeRenderer)
+			//{
+			//	mCubeRenderer.reset(new SimpleRenderer());
+			//}
+			if (!mSpriteRenderer)
 			{
-				mCubeRenderer.reset(new SimpleRenderer());
+				mSpriteRenderer.reset(new SpriteRenderer());
 			}
 		}
 
@@ -126,6 +135,7 @@ namespace Angle {
 
 		std::unique_ptr<OpenGLES> mOpenGLES;
 		std::unique_ptr<SimpleRenderer> mCubeRenderer;
+		std::unique_ptr<SpriteRenderer> mSpriteRenderer;
 	};
 }
 

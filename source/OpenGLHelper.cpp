@@ -1,10 +1,16 @@
 #include "pch.h"
+#include "OpenGLHelper.h"
 //// These are used by the shader compilation methods.
 //#include <vector>
 //#include <iostream>
 //#include <fstream>
+#include "winrt/Windows.ApplicationModel.h"
+#include "winrt/Windows.Storage.Streams.h"
 
 using namespace std;
+using namespace winrt;
+using namespace Windows::Storage;
+using namespace Windows::Storage::Streams;
 
 GLuint CompileShader(GLenum type, const string& source)
 {
@@ -59,11 +65,12 @@ GLuint CompileProgram(const string& vsSource, const string& fsSource)
 	glAttachShader(program, fs);
 	glDeleteShader(fs);
 
+
 	glLinkProgram(program);
 
 	GLint linkStatus;
 	glGetProgramiv(program, GL_LINK_STATUS, &linkStatus);
-
+	
 	if (linkStatus == 0)
 	{
 		GLint infoLogLength;
@@ -78,4 +85,20 @@ GLuint CompileProgram(const string& vsSource, const string& fsSource)
 	}
 
 	return program;
+}
+
+future<vector<unsigned char>> ReadDataAsync(const wstring& filename)
+{
+	try {
+		auto folder = winrt::Windows::ApplicationModel::Package::Current().InstalledLocation();
+		auto file = co_await folder.GetFileAsync(winrt::hstring(filename.c_str()));
+		IBuffer fileBuffer = co_await FileIO::ReadBufferAsync(file);
+		std::vector<unsigned char> returnBuffer;
+		returnBuffer.resize(fileBuffer.Length());
+		DataReader::FromBuffer(fileBuffer).ReadBytes(winrt::array_view<unsigned char>(returnBuffer));
+		co_return returnBuffer;
+	}
+	catch (...) {
+
+	}
 }

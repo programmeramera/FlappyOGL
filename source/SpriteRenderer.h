@@ -1,6 +1,7 @@
 #pragma once
 
-#include "pch.h"
+#include <future>
+#include "angle.h"
 
 namespace Angle
 {
@@ -9,6 +10,7 @@ namespace Angle
     public:
 		SpriteRenderer();
         ~SpriteRenderer();
+		std::future<GLuint> InitializeAsync();
         void Draw();
         void UpdateWindowSize(GLsizei width, GLsizei height);
 		void UpdateRotation(int delta);
@@ -18,16 +20,21 @@ namespace Angle
         GLsizei mWindowWidth;
         GLsizei mWindowHeight;
 
-        GLint mPositionAttribLocation;
-        GLint mColorAttribLocation;
+		// Vertex shader parameters
+        GLint mVertexAttribLocation;
+		GLint mUVAttribLocation;
+		GLint mSpriteRectUniformLocation;
+		GLint mSpriteWorldUniformLocation;
+		GLint mTextureSizeUniformLocation;
 
-        GLint mModelUniformLocation;
-        GLint mViewUniformLocation;
-        GLint mProjUniformLocation;
+		// Fragment shader parameters
+		GLint mTextureUniformLocation;
 
         GLuint mVertexPositionBuffer;
-        GLuint mVertexColorBuffer;
-        GLuint mIndexBuffer;
+        GLuint mVertexUVBuffer;
+        //GLuint mIndexBuffer;
+
+		GLuint mTextureIndex;
 
         int mDrawCount;
     };
