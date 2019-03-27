@@ -54,6 +54,7 @@ namespace Angle {
 		void Run()
 		{
 			auto dispatcher = CoreWindow::GetForCurrentThread().Dispatcher();
+			mSpriteRenderer->InitializeAsync();
 
 			while (!mWindowClosed)
 			{

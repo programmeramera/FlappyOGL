@@ -26,6 +26,7 @@ namespace Angle
 		GLint mSpriteRectUniformLocation;
 		GLint mSpriteWorldUniformLocation;
 		GLint mTextureSizeUniformLocation;
+		GLint mScreenSizeUniformLocation;
 
 		// Fragment shader parameters
 		GLint mTextureUniformLocation;
@@ -37,5 +38,6 @@ namespace Angle
 		GLuint mTextureIndex;
 
         int mDrawCount;
+		bool mInitialized;
     };
 }

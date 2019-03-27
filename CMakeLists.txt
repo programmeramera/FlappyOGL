@@ -59,15 +59,16 @@ set(SOURCE_FILES
 #    source/Common/MathHelper.h
 #)
 
-#set(CONTENT_FILES
-#    source/Content/Sample3DSceneRenderer.cpp
+set(CONTENT_FILES
+    assets/checker.bmp
+    assets/checkersmall.bmp
 #    source/Content/SampleFpsTextRenderer.cpp
 #    source/Content/Sample3DSceneRenderer.h
 #    source/Content/SampleFpsTextRenderer.h
 #    source/Content/ShaderStructures.h
 #    source/Content/SimpleRenderer.h
 #    source/Content/SimpleRenderer.cpp
-#)
+)
 
 #set(PIXELSHADER_FILES
 #  source/Content/SamplePixelShader.hlsl
@@ -92,7 +93,7 @@ set(ASSET_FILES ${ASSET_FILES}
     assets/Wide310x150Logo.scale-200.png
 )
 
-#set_property(SOURCE ${CONTENT_FILES} PROPERTY VS_DEPLOYMENT_CONTENT 1)
+set_property(SOURCE ${CONTENT_FILES} PROPERTY VS_DEPLOYMENT_CONTENT 1)
 set_property(SOURCE ${ASSET_FILES} PROPERTY VS_DEPLOYMENT_CONTENT 1)
 set_property(SOURCE ${ASSET_FILES} PROPERTY VS_DEPLOYMENT_LOCATION "Assets")
 #set_property(SOURCE ${DEBUG_CONTENT_FILES} PROPERTY VS_DEPLOYMENT_CONTENT $<CONFIG:Debug>)
@@ -114,7 +115,7 @@ set_property(SOURCE ${ASSET_FILES} PROPERTY VS_DEPLOYMENT_LOCATION "Assets")
 #source_group("Content" FILES ${CONTENT_FILES})
 #source_group("Assets" FILES ${ASSET_FILES})
 
-add_executable(${EXE_NAME} WIN32 ${SOURCE_FILES} ${ASSET_FILES})
+add_executable(${EXE_NAME} WIN32 ${SOURCE_FILES} ${ASSET_FILES} ${CONTENT_FILES})
 
 # This is the important line, making sure to point to the header file
 target_include_directories(${EXE_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/source)

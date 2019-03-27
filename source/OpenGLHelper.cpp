@@ -7,10 +7,15 @@
 #include "winrt/Windows.ApplicationModel.h"
 #include "winrt/Windows.Storage.Streams.h"
 
+#include <filesystem>
+#include <winrt/Windows.Graphics.Imaging.h>
+
 using namespace std;
 using namespace winrt;
+using namespace Windows::Foundation;
 using namespace Windows::Storage;
 using namespace Windows::Storage::Streams;
+using namespace Windows::Graphics::Imaging;
 
 GLuint CompileShader(GLenum type, const string& source)
 {
@@ -100,5 +105,24 @@ future<vector<unsigned char>> ReadDataAsync(const wstring& filename)
 	}
 	catch (...) {
 
+	}
+}
+
+IAsyncOperation<PixelDataProvider> ReadImageAsync(const wstring& filename) {
+	auto folder = Windows::ApplicationModel::Package::Current().InstalledLocation();
+	auto path = folder.Path().c_str();
+	auto file = co_await folder.TryGetItemAsync(filename);
+	auto stream = co_await file.as<IStorageFile>().OpenAsync(FileAccessMode::Read);
+
+	BitmapDecoder decoder = co_await BitmapDecoder::CreateAsync(stream);
+	SoftwareBitmap bitmap = co_await decoder.GetSoftwareBitmapAsync();
+	PixelDataProvider pixelData = co_await decoder.GetPixelDataAsync(BitmapPixelFormat::Rgba8,BitmapAlphaMode::Straight,BitmapTransform(),ExifOrientationMode::IgnoreExifOrientation, ColorManagementMode::DoNotColorManage);
+	co_return pixelData;
+}
+
+void CheckOpenGLError() {
+	GLenum err = glGetError();
+	if (err != GL_NO_ERROR) {
+		printf("OpenGL error %08x\n", err);
 	}
 }
