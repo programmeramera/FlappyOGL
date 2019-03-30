@@ -10,12 +10,16 @@ namespace Angle
     public:
 		SpriteRenderer();
         ~SpriteRenderer();
-		std::future<GLuint> InitializeAsync();
+		winrt::fire_and_forget InitializeAsync();
         void Draw();
         void UpdateWindowSize(GLsizei width, GLsizei height);
 		void UpdateRotation(int delta);
 
     private:
+		void InitializeShaders();
+		void InitializeBuffers();
+		std::future<void> LoadTextureAsync();
+
         GLuint mProgram;
         GLsizei mWindowWidth;
         GLsizei mWindowHeight;

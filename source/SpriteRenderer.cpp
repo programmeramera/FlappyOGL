@@ -22,23 +22,18 @@ GLuint CreateSimpleTexture2DAsync(GLubyte* pixels, GLsizei width, GLsizei height
 
 	// Use tightly packed data
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	CheckOpenGLError();
 
 	// Generate a texture object
 	glGenTextures(1, &textureId);
-	CheckOpenGLError();
 
 	// Bind the texture object
 	glBindTexture(GL_TEXTURE_2D, textureId);
-	CheckOpenGLError();
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-	CheckOpenGLError();
 
 	// Set the filtering mode
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	CheckOpenGLError();
 
 	return textureId;
 }
@@ -72,8 +67,7 @@ SpriteRenderer::~SpriteRenderer()
     }
 }
 
-future<GLuint> SpriteRenderer::InitializeAsync()
-{
+void SpriteRenderer::InitializeShaders() {
 	// Vertex Shader source
 	const std::string vs = STRING
 	(
@@ -130,26 +124,22 @@ future<GLuint> SpriteRenderer::InitializeAsync()
 	const std::string fs = STRING
 	(
 		precision mediump float;
-	//incoming values from the vertex shader stage.
-	//if the vertices of a primitive have different values, they are interpolated!
+		//incoming values from the vertex shader stage.
+		//if the vertices of a primitive have different values, they are interpolated!
+		varying vec2 v_uv;
+		uniform sampler2D texture;
 
-	varying vec2 v_uv;
-	uniform sampler2D texture;
-
-	// setting float precision
-	precision mediump float;
-
-	void main()
-	{
-		// read the fragment color from texture
-		gl_FragColor = texture2D(texture, v_uv);
-	}
+		void main()
+		{
+			// read the fragment color from texture
+			gl_FragColor = texture2D(texture, v_uv);
+		}
 	);
 
 	// Set up the shader and its uniform/attribute locations.
 	mProgram = CompileProgram(vs, fs);
 
-	//// Vertex shader
+	// Vertex shader parameters
 	mVertexAttribLocation = glGetAttribLocation(mProgram, "a_position");
 	mUVAttribLocation = glGetAttribLocation(mProgram, "a_uv");
 	mScreenSizeUniformLocation = glGetUniformLocation(mProgram, "screenSize");
@@ -157,18 +147,11 @@ future<GLuint> SpriteRenderer::InitializeAsync()
 	mSpriteWorldUniformLocation = glGetUniformLocation(mProgram, "spriteWorld");
 	mTextureSizeUniformLocation = glGetUniformLocation(mProgram, "textureSize");
 
-	// Fragment shader
+	// Fragment shader parameters
 	mTextureUniformLocation = glGetUniformLocation(mProgram, "texture");
+}
 
-	// Set up the rectangle geometry.
-	//GLfloat vertexPositions[] =
-	//{
-	//	-0.5f,  0.5f, 0.0f,
-	//	-0.5f, -0.5f, 0.0f,
-	//	 0.5f, -0.5f, 0.0f,
-	//	 0.5f,  0.5f, 0.0f,
-	//};
-
+void SpriteRenderer::InitializeBuffers() {
 	GLfloat vertexPositions[] =
 	{
 		 0.0f, 1.0f, 0.0f,
@@ -192,7 +175,9 @@ future<GLuint> SpriteRenderer::InitializeAsync()
 	glGenBuffers(1, &mVertexUVBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexUVBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexUVs), vertexUVs, GL_STATIC_DRAW);
+}
 
+future<void> SpriteRenderer::LoadTextureAsync() {
 	// Load the texture
 	auto pixelDataProvider = co_await ReadImageAsync(L"checker.bmp");
 	auto dpPixels = pixelDataProvider.DetachPixelData();
@@ -200,7 +185,7 @@ future<GLuint> SpriteRenderer::InitializeAsync()
 	GLubyte* pixels = new GLubyte[size];
 	std::vector<unsigned char> vPixels(dpPixels.begin(), dpPixels.end());
 	memcpy(pixels, &(vPixels[0]), size);
-	
+
 	// 2x2 Image, 3 bytes per pixel (R, G, B, A)
 	//GLubyte pixels[4 * 4] =
 	//{
@@ -212,8 +197,14 @@ future<GLuint> SpriteRenderer::InitializeAsync()
 
 	mTextureIndex = CreateSimpleTexture2DAsync(pixels, 128, 128);
 	delete (pixels);
+}
+
+winrt::fire_and_forget SpriteRenderer::InitializeAsync()
+{
+	InitializeShaders();
+	InitializeBuffers();
+	co_await LoadTextureAsync();
 	mInitialized = true;
-	co_return mTextureIndex;
 }
 
 void SpriteRenderer::Draw()
@@ -231,7 +222,7 @@ void SpriteRenderer::Draw()
 	glEnableVertexAttribArray(mVertexAttribLocation);
 	glVertexAttribPointer(mVertexAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-	MathHelper::Vector4 spriteRect(0.0f, 0.0f, 100.0f, 100.0f);
+	MathHelper::Vector4 spriteRect(0.0f, 0.0f, 64.0f, 64.0f);
 	glUniform4fv(mSpriteRectUniformLocation, 1, &(spriteRect.m[0]));
 
 	MathHelper::Vector2 spriteWorld(100.0f, 100.0f);
@@ -244,7 +235,7 @@ void SpriteRenderer::Draw()
 	glEnableVertexAttribArray(mUVAttribLocation);
 	glVertexAttribPointer(mUVAttribLocation, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-	MathHelper::Vector2 textureSize(100.0f, 100.0f);
+	MathHelper::Vector2 textureSize(128.0f, 128.0f);
 	glUniform2fv(mTextureSizeUniformLocation, 1, &(textureSize.m[0]));
 
 	glActiveTexture(GL_TEXTURE0);

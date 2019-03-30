@@ -32,7 +32,7 @@ namespace Angle {
 
 		// IFrameworkView Methods.
 		void Initialize(CoreApplicationView const &) { 
-			ApplicationView::PreferredLaunchViewSize(Size(480, 800));
+			ApplicationView::PreferredLaunchViewSize(Size(500, 800));
 			ApplicationView::PreferredLaunchWindowingMode(ApplicationViewWindowingMode::PreferredLaunchViewSize);
 		}
 		void Load(hstring) { }
