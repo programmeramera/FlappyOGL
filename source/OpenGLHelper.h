@@ -9,5 +9,6 @@
 GLuint CompileShader(GLenum type, const std::string& source);
 GLuint CompileProgram(const std::string& vsSource, const std::string& fsSource);
 std::future<std::vector<unsigned char>> ReadDataAsync(const std::wstring& filename);
-winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::Graphics::Imaging::PixelDataProvider> ReadImageAsync(const std::wstring& filename);
+//winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::Graphics::Imaging::PixelDataProvider> ReadImageAsync(const std::wstring& filename);
+//std::future<GLubyte*> GetPixelsFromImageAsync(const std::wstring& filename);
 void CheckOpenGLError();

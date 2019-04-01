@@ -9,13 +9,18 @@
 
 using namespace Angle;
 using namespace std;
+using namespace winrt;
+using namespace Windows::Foundation;
+using namespace Windows::Storage;
+using namespace Windows::Storage::Streams;
+using namespace Windows::Graphics::Imaging;
 
 #define STRING(s) #s
 
 //
 // Create a simple 2x2 texture image with four different colors
 //
-GLuint CreateSimpleTexture2DAsync(GLubyte* pixels, GLsizei width, GLsizei height)
+GLuint CreateSimpleTexture2D(GLubyte* pixels, GLsizei width, GLsizei height)
 {
 	// Texture object handle
 	GLuint textureId;
@@ -176,17 +181,63 @@ void SpriteRenderer::InitializeBuffers() {
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexUVBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexUVs), vertexUVs, GL_STATIC_DRAW);
 }
+//
+//IAsyncOperation<PixelDataProvider> ReadImageAsync(const wstring& filename) {
+//	auto folder = Windows::ApplicationModel::Package::Current().InstalledLocation();
+//	auto path = folder.Path().c_str();
+//	auto file = co_await folder.TryGetItemAsync(filename);
+//	auto stream = co_await file.as<IStorageFile>().OpenAsync(FileAccessMode::Read);
+//
+//	auto decoder = co_await BitmapDecoder::CreateAsync(stream);
+//	auto bitmap = co_await decoder.GetSoftwareBitmapAsync();
+//	return co_await decoder.GetPixelDataAsync(BitmapPixelFormat::Rgba8, BitmapAlphaMode::Straight, BitmapTransform(), ExifOrientationMode::IgnoreExifOrientation, ColorManagementMode::DoNotColorManage);
+//}
 
-future<void> SpriteRenderer::LoadTextureAsync() {
-	// Load the texture
-	auto pixelDataProvider = co_await ReadImageAsync(L"checker.bmp");
+IAsyncOperation<IStorageFile> LoadImageAsync(const wstring& filename) {
+	auto folder = Windows::ApplicationModel::Package::Current().InstalledLocation();
+	auto path = folder.Path().c_str();
+	auto file = co_await folder.TryGetItemAsync(filename);
+	return file.as<IStorageFile>();
+}
+
+IAsyncOperation<PixelDataProvider> GetPixelDataFromImageAsync(IStorageFile file, int& width, int& height) {
+	auto stream = co_await file.OpenAsync(FileAccessMode::Read);
+	auto decoder = co_await BitmapDecoder::CreateAsync(stream);
+	auto bitmap = co_await decoder.GetSoftwareBitmapAsync();
+	width = bitmap.PixelWidth();
+	height = bitmap.PixelHeight();
+	auto pixelData = co_await decoder.GetPixelDataAsync(BitmapPixelFormat::Rgba8, BitmapAlphaMode::Straight, BitmapTransform(), ExifOrientationMode::IgnoreExifOrientation, ColorManagementMode::DoNotColorManage);
+	co_return pixelData;
+}
+
+future<vector<unsigned char>> GetPixelsFromImageAsync(IStorageFile file, int& width, int& height) {
+	auto pixelData = co_await GetPixelDataFromImageAsync(file, width, height);
+	auto dpPixels = pixelData.DetachPixelData();
+	vector<unsigned char> pixels(dpPixels.begin(), dpPixels.end());
+	return pixels;
+}
+
+future<GLubyte*> GetPixelsFromPixelDataProvider(const PixelDataProvider& pixelDataProvider) {
 	auto dpPixels = pixelDataProvider.DetachPixelData();
 	auto size = dpPixels.size();
 	GLubyte* pixels = new GLubyte[size];
 	std::vector<unsigned char> vPixels(dpPixels.begin(), dpPixels.end());
 	memcpy(pixels, &(vPixels[0]), size);
+	co_return pixels;
+}
 
-	// 2x2 Image, 3 bytes per pixel (R, G, B, A)
+future<void> SpriteRenderer::LoadTextureAsync() {
+	// Load the texture
+	int width, height;
+	auto file = co_await LoadImageAsync(L"checker.bmp");
+	auto pixelData = co_await GetPixelDataFromImageAsync(file, width, height);
+	auto pixels = co_await GetPixelsFromPixelDataProvider(pixelData);
+
+	mTextureIndex = CreateSimpleTexture2D(pixels, width, height);
+	delete (pixels);
+}
+
+// 2x2 Image, 3 bytes per pixel (R, G, B, A)
 	//GLubyte pixels[4 * 4] =
 	//{
 	//   38,   52,   68, 255, // Red
@@ -194,10 +245,6 @@ future<void> SpriteRenderer::LoadTextureAsync() {
 	//	 0,   0, 255, 255, // Blue
 	//   255, 255,   0, 255, // Yellow
 	//};
-
-	mTextureIndex = CreateSimpleTexture2DAsync(pixels, 128, 128);
-	delete (pixels);
-}
 
 winrt::fire_and_forget SpriteRenderer::InitializeAsync()
 {

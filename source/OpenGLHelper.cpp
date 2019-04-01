@@ -4,11 +4,6 @@
 //#include <vector>
 //#include <iostream>
 //#include <fstream>
-#include "winrt/Windows.ApplicationModel.h"
-#include "winrt/Windows.Storage.Streams.h"
-
-#include <filesystem>
-#include <winrt/Windows.Graphics.Imaging.h>
 
 using namespace std;
 using namespace winrt;
@@ -108,17 +103,27 @@ future<vector<unsigned char>> ReadDataAsync(const wstring& filename)
 	}
 }
 
-IAsyncOperation<PixelDataProvider> ReadImageAsync(const wstring& filename) {
-	auto folder = Windows::ApplicationModel::Package::Current().InstalledLocation();
-	auto path = folder.Path().c_str();
-	auto file = co_await folder.TryGetItemAsync(filename);
-	auto stream = co_await file.as<IStorageFile>().OpenAsync(FileAccessMode::Read);
-
-	BitmapDecoder decoder = co_await BitmapDecoder::CreateAsync(stream);
-	SoftwareBitmap bitmap = co_await decoder.GetSoftwareBitmapAsync();
-	PixelDataProvider pixelData = co_await decoder.GetPixelDataAsync(BitmapPixelFormat::Rgba8,BitmapAlphaMode::Straight,BitmapTransform(),ExifOrientationMode::IgnoreExifOrientation, ColorManagementMode::DoNotColorManage);
-	co_return pixelData;
-}
+//future<GLubyte*> GetPixelsFromImageAsync(const wstring& filename) {
+//	auto pixelDataProvider = co_await ReadImageAsync(filename);
+//	auto dpPixels = pixelDataProvider.DetachPixelData();
+//	auto size = dpPixels.size();
+//	GLubyte* pixels = new GLubyte[size];
+//	std::vector<unsigned char> vPixels(dpPixels.begin(), dpPixels.end());
+//	memcpy(pixels, &(vPixels[0]), size);
+//	co_return pixels;
+//}
+//
+//IAsyncOperation<PixelDataProvider> ReadImageAsync(const wstring& filename) {
+//	auto folder = Windows::ApplicationModel::Package::Current().InstalledLocation();
+//	auto path = folder.Path().c_str();
+//	auto file = co_await folder.TryGetItemAsync(filename);
+//	auto stream = co_await file.as<IStorageFile>().OpenAsync(FileAccessMode::Read);
+//
+//	BitmapDecoder decoder = co_await BitmapDecoder::CreateAsync(stream);
+//	SoftwareBitmap bitmap = co_await decoder.GetSoftwareBitmapAsync();
+//	PixelDataProvider pixelData = co_await decoder.GetPixelDataAsync(BitmapPixelFormat::Rgba8,BitmapAlphaMode::Straight,BitmapTransform(),ExifOrientationMode::IgnoreExifOrientation, ColorManagementMode::DoNotColorManage);
+//	co_return pixelData;
+//}
 
 void CheckOpenGLError() {
 	GLenum err = glGetError();
