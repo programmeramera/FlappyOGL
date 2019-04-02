@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "TextureManager.h"
+#include "OpenGLHelper.h"
 
 using namespace std;
 using namespace winrt;
@@ -23,9 +24,11 @@ GLuint TextureManager::CreateTexture() {
 
 	// Use tightly packed data
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	CheckOpenGLError();
 
 	// Generate a texture object
 	glGenTextures(1, &textureId);
+	CheckOpenGLError();
 
 	return textureId;
 }
@@ -34,12 +37,15 @@ void TextureManager::BindTexture(GLuint textureId, GLubyte* pixels, GLsizei widt
 {
 	// Bind the texture object
 	glBindTexture(GL_TEXTURE_2D, textureId);
+	CheckOpenGLError();
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	CheckOpenGLError();
 
 	// Set the filtering mode
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	CheckOpenGLError();
 }
 
 IAsyncOperation<IStorageFile> TextureManager::LoadImageAsync(const wstring& filename) {
@@ -73,16 +79,31 @@ future<Texture2D> TextureManager::LoadTextureAsync(std::wstring filename) {
 	Texture2D texture;
 	int width, height;
 	GLuint textureIndex = CreateTexture();
-	auto file = co_await LoadImageAsync(filename);
-	auto pixelData = co_await GetPixelDataFromImageAsync(file, width, height);
-	//auto pixels = co_await GetPixelsFromPixelDataProvider(pixelData);
+
+	// Load file
+	auto folder = Windows::ApplicationModel::Package::Current().InstalledLocation();
+	auto path = folder.Path().c_str();
+	auto item = co_await folder.TryGetItemAsync(filename);
+	auto file = item.as<IStorageFile>();
+
+	// Get PixelDataProvider
+	auto stream = co_await file.OpenAsync(FileAccessMode::Read);
+	auto decoder = co_await BitmapDecoder::CreateAsync(stream);
+	auto bitmap = co_await decoder.GetSoftwareBitmapAsync();
+	width = bitmap.PixelWidth();
+	height = bitmap.PixelHeight();
+	auto pixelData = co_await decoder.GetPixelDataAsync(BitmapPixelFormat::Rgba8, BitmapAlphaMode::Straight, BitmapTransform(), ExifOrientationMode::IgnoreExifOrientation, ColorManagementMode::DoNotColorManage);
+
+	// Get Pixels
 	auto dpPixels = pixelData.DetachPixelData();
 	auto size = dpPixels.size();
 
 	GLubyte* pixels = new GLubyte[size];
-	std::vector<unsigned char> vPixels(dpPixels.begin(), dpPixels.end());
-	memcpy(pixels, &(vPixels[0]), size);
+	//std::vector<unsigned char> vPixels(dpPixels.begin(), dpPixels.end());
+	memcpy(pixels, &(dpPixels[0]), size);
+	
 	BindTexture(textureIndex, pixels, width, height);
+	
 	delete (pixels);
 
 	texture.TextureIndex = textureIndex;

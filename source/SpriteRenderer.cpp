@@ -223,7 +223,7 @@ void SpriteRenderer::Draw()
 
 	auto texture = mTextureManager->GetTexture(L"checker.bmp");
 
-	MathHelper::Vector2 textureSize(128.0, 128.0);
+	MathHelper::Vector2 textureSize(texture.Width, texture.Height);
 	glUniform2fv(mTextureSizeUniformLocation, 1, &(textureSize.m[0]));
 
 	glActiveTexture(GL_TEXTURE0);

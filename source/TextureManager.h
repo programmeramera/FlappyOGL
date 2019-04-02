@@ -7,12 +7,12 @@
 #include <winrt/Windows.Graphics.Imaging.h>
 #include "angle.h"
 
-class Texture2D {
+struct Texture2D {
 public:
 	std::wstring Name;
-    int Width;
-    int Height;
-    int TextureIndex;
+    float Width;
+    float Height;
+    GLuint TextureIndex;
 };
 
 class TextureManager {
