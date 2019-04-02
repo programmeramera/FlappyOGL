@@ -23,8 +23,7 @@ public:
 	bool IsLoaded() { return mIsLoaded; }
 
 private:
-	GLuint CreateTexture();
-	void BindTexture(GLuint textureId, GLubyte* pixels, GLsizei width, GLsizei height);
+	GLuint CreateTexture(GLubyte* pixels, GLsizei width, GLsizei height);
 	winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::Storage::IStorageFile> LoadImageAsync(const std::wstring& filename);
 	winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::Graphics::Imaging::PixelDataProvider> GetPixelDataFromImageAsync(winrt::Windows::Storage::IStorageFile file, int& width, int& height);
 	std::future<GLubyte*> GetPixelsFromPixelDataProvider(const winrt::Windows::Graphics::Imaging::PixelDataProvider& pixelDataProvider);

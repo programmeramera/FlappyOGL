@@ -18,23 +18,18 @@ IAsyncAction TextureManager::LoadTexturesAsync(std::vector<std::wstring> filenam
 	mIsLoaded = true;
 }
 
-GLuint TextureManager::CreateTexture() {
+
+GLuint TextureManager::CreateTexture(GLubyte* pixels, GLsizei width, GLsizei height)
+{
 	// Texture object handle
 	GLuint textureId;
 
 	// Use tightly packed data
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	CheckOpenGLError();
 
 	// Generate a texture object
 	glGenTextures(1, &textureId);
-	CheckOpenGLError();
 
-	return textureId;
-}
-
-void TextureManager::BindTexture(GLuint textureId, GLubyte* pixels, GLsizei width, GLsizei height)
-{
 	// Bind the texture object
 	glBindTexture(GL_TEXTURE_2D, textureId);
 	CheckOpenGLError();
@@ -46,6 +41,8 @@ void TextureManager::BindTexture(GLuint textureId, GLubyte* pixels, GLsizei widt
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	CheckOpenGLError();
+
+	return textureId;
 }
 
 IAsyncOperation<IStorageFile> TextureManager::LoadImageAsync(const wstring& filename) {
@@ -78,8 +75,7 @@ future<Texture2D> TextureManager::LoadTextureAsync(std::wstring filename) {
 	// Load the texture
 	Texture2D texture;
 	int width, height;
-	GLuint textureIndex = CreateTexture();
-
+	
 	// Load file
 	auto folder = Windows::ApplicationModel::Package::Current().InstalledLocation();
 	auto path = folder.Path().c_str();
@@ -101,8 +97,8 @@ future<Texture2D> TextureManager::LoadTextureAsync(std::wstring filename) {
 	GLubyte* pixels = new GLubyte[size];
 	//std::vector<unsigned char> vPixels(dpPixels.begin(), dpPixels.end());
 	memcpy(pixels, &(dpPixels[0]), size);
-	
-	BindTexture(textureIndex, pixels, width, height);
+
+	GLuint textureIndex = CreateTexture(pixels, width, height);
 	
 	delete (pixels);
 

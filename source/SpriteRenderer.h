@@ -11,7 +11,7 @@ namespace Angle
     public:
 		SpriteRenderer(std::shared_ptr<TextureManager> textureManager);
         ~SpriteRenderer();
-		void Initialize();
+		winrt::fire_and_forget Initialize();
         void Draw();
         void UpdateWindowSize(GLsizei width, GLsizei height);
 		void UpdateRotation(int delta);

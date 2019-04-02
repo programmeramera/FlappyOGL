@@ -20,8 +20,8 @@ SpriteRenderer::SpriteRenderer(std::shared_ptr<TextureManager> textureManager)
 	, mInitialized(false)
 	, mTextureManager(textureManager)
 {
-	InitializeShaders();
-	InitializeBuffers();
+	//InitializeShaders();
+	//InitializeBuffers();
 }
 
 SpriteRenderer::~SpriteRenderer()
@@ -185,17 +185,18 @@ void SpriteRenderer::InitializeBuffers() {
 	//   255, 255,   0, 255, // Yellow
 	//};
 
-void SpriteRenderer::Initialize()
+winrt::fire_and_forget SpriteRenderer::Initialize()
 {
 	InitializeShaders();
 	InitializeBuffers();
-	//vector<wstring> filenames = { L"checker.bmp" };
-	//mInitialized = co_await mTextureManager->LoadTexturesAsync(filenames);
+	vector<wstring> filenames = { L"checker.bmp" };
+	co_await mTextureManager->LoadTexturesAsync(filenames);
+	mInitialized = true;
 }
 
 void SpriteRenderer::Draw()
 {
-	if (!mTextureManager->IsLoaded()) {
+	if (!mInitialized) {
 		return;
 	}
 	// Clear the color buffer   
