@@ -221,8 +221,7 @@ future<GLubyte*> GetPixelsFromPixelDataProvider(const PixelDataProvider& pixelDa
 	auto dpPixels = pixelDataProvider.DetachPixelData();
 	auto size = dpPixels.size();
 	GLubyte* pixels = new GLubyte[size];
-	std::vector<unsigned char> vPixels(dpPixels.begin(), dpPixels.end());
-	memcpy(pixels, &(vPixels[0]), size);
+	memcpy(pixels, &(dpPixels[0]), size);
 	co_return pixels;
 }
 
