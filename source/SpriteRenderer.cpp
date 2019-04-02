@@ -4,51 +4,24 @@
 
 #include "pch.h"
 #include "SpriteRenderer.h"
-#include "MathHelper.h"
 #include "OpenGLHelper.h"
+#include "MathHelper.h"
 
 using namespace Angle;
 using namespace std;
-using namespace winrt;
-using namespace Windows::Foundation;
-using namespace Windows::Storage;
-using namespace Windows::Storage::Streams;
-using namespace Windows::Graphics::Imaging;
+
 
 #define STRING(s) #s
 
-//
-// Create a simple 2x2 texture image with four different colors
-//
-GLuint CreateSimpleTexture2D(GLubyte* pixels, GLsizei width, GLsizei height)
-{
-	// Texture object handle
-	GLuint textureId;
-
-	// Use tightly packed data
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-	// Generate a texture object
-	glGenTextures(1, &textureId);
-
-	// Bind the texture object
-	glBindTexture(GL_TEXTURE_2D, textureId);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-
-	// Set the filtering mode
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	return textureId;
-}
-
-SpriteRenderer::SpriteRenderer() 
+SpriteRenderer::SpriteRenderer(std::shared_ptr<TextureManager> textureManager) 
 	: mWindowWidth(0)
 	, mWindowHeight(0)
 	, mDrawCount(0)
-	, mInitialized(false) 
+	, mInitialized(false)
+	, mTextureManager(textureManager)
 {
+	InitializeShaders();
+	InitializeBuffers();
 }
 
 SpriteRenderer::~SpriteRenderer()
@@ -193,49 +166,15 @@ void SpriteRenderer::InitializeBuffers() {
 //	return co_await decoder.GetPixelDataAsync(BitmapPixelFormat::Rgba8, BitmapAlphaMode::Straight, BitmapTransform(), ExifOrientationMode::IgnoreExifOrientation, ColorManagementMode::DoNotColorManage);
 //}
 
-IAsyncOperation<IStorageFile> LoadImageAsync(const wstring& filename) {
-	auto folder = Windows::ApplicationModel::Package::Current().InstalledLocation();
-	auto path = folder.Path().c_str();
-	auto file = co_await folder.TryGetItemAsync(filename);
-	return file.as<IStorageFile>();
-}
 
-IAsyncOperation<PixelDataProvider> GetPixelDataFromImageAsync(IStorageFile file, int& width, int& height) {
-	auto stream = co_await file.OpenAsync(FileAccessMode::Read);
-	auto decoder = co_await BitmapDecoder::CreateAsync(stream);
-	auto bitmap = co_await decoder.GetSoftwareBitmapAsync();
-	width = bitmap.PixelWidth();
-	height = bitmap.PixelHeight();
-	auto pixelData = co_await decoder.GetPixelDataAsync(BitmapPixelFormat::Rgba8, BitmapAlphaMode::Straight, BitmapTransform(), ExifOrientationMode::IgnoreExifOrientation, ColorManagementMode::DoNotColorManage);
-	co_return pixelData;
-}
+//future<vector<unsigned char>> GetPixelsFromImageAsync(IStorageFile file, int& width, int& height) {
+//	auto pixelData = co_await GetPixelDataFromImageAsync(file, width, height);
+//	auto dpPixels = pixelData.DetachPixelData();
+//	vector<unsigned char> pixels(dpPixels.begin(), dpPixels.end());
+//	return pixels;
+//}
 
-future<vector<unsigned char>> GetPixelsFromImageAsync(IStorageFile file, int& width, int& height) {
-	auto pixelData = co_await GetPixelDataFromImageAsync(file, width, height);
-	auto dpPixels = pixelData.DetachPixelData();
-	vector<unsigned char> pixels(dpPixels.begin(), dpPixels.end());
-	return pixels;
-}
 
-future<GLubyte*> GetPixelsFromPixelDataProvider(const PixelDataProvider& pixelDataProvider) {
-	auto dpPixels = pixelDataProvider.DetachPixelData();
-	auto size = dpPixels.size();
-	GLubyte* pixels = new GLubyte[size];
-	std::vector<unsigned char> vPixels(dpPixels.begin(), dpPixels.end());
-	memcpy(pixels, &(vPixels[0]), size);
-	co_return pixels;
-}
-
-future<void> SpriteRenderer::LoadTextureAsync() {
-	// Load the texture
-	int width, height;
-	auto file = co_await LoadImageAsync(L"checker.bmp");
-	auto pixelData = co_await GetPixelDataFromImageAsync(file, width, height);
-	auto pixels = co_await GetPixelsFromPixelDataProvider(pixelData);
-
-	mTextureIndex = CreateSimpleTexture2D(pixels, width, height);
-	delete (pixels);
-}
 
 // 2x2 Image, 3 bytes per pixel (R, G, B, A)
 	//GLubyte pixels[4 * 4] =
@@ -246,17 +185,17 @@ future<void> SpriteRenderer::LoadTextureAsync() {
 	//   255, 255,   0, 255, // Yellow
 	//};
 
-winrt::fire_and_forget SpriteRenderer::InitializeAsync()
+void SpriteRenderer::Initialize()
 {
 	InitializeShaders();
 	InitializeBuffers();
-	co_await LoadTextureAsync();
-	mInitialized = true;
+	//vector<wstring> filenames = { L"checker.bmp" };
+	//mInitialized = co_await mTextureManager->LoadTexturesAsync(filenames);
 }
 
 void SpriteRenderer::Draw()
 {
-	if (!mInitialized) {
+	if (!mTextureManager->IsLoaded()) {
 		return;
 	}
 	// Clear the color buffer   
@@ -275,18 +214,20 @@ void SpriteRenderer::Draw()
 	MathHelper::Vector2 spriteWorld(100.0f, 100.0f);
 	glUniform2fv(mSpriteWorldUniformLocation, 1, &(spriteWorld.m[0]));
 
-	MathHelper::Vector2 screenSize(mWindowWidth, mWindowHeight);
+	MathHelper::Vector2 screenSize(static_cast<float>(mWindowWidth), static_cast<float>(mWindowHeight));
 	glUniform2fv(mScreenSizeUniformLocation, 1, &(screenSize.m[0]));
 
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexUVBuffer);
 	glEnableVertexAttribArray(mUVAttribLocation);
 	glVertexAttribPointer(mUVAttribLocation, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-	MathHelper::Vector2 textureSize(128.0f, 128.0f);
+	auto texture = mTextureManager->GetTexture(L"checker.bmp");
+
+	MathHelper::Vector2 textureSize(128.0, 128.0);
 	glUniform2fv(mTextureSizeUniformLocation, 1, &(textureSize.m[0]));
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, mTextureIndex);
+	glBindTexture(GL_TEXTURE_2D, texture.TextureIndex);
 
 	// Set the sampler texture unit to 0
 	glUniform1i(mTextureUniformLocation, 0);

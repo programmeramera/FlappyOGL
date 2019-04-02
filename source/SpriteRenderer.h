@@ -2,15 +2,16 @@
 
 #include <future>
 #include "angle.h"
+#include "TextureManager.h"
 
 namespace Angle
 {
     class SpriteRenderer
     {
     public:
-		SpriteRenderer();
+		SpriteRenderer(std::shared_ptr<TextureManager> textureManager);
         ~SpriteRenderer();
-		winrt::fire_and_forget InitializeAsync();
+		void Initialize();
         void Draw();
         void UpdateWindowSize(GLsizei width, GLsizei height);
 		void UpdateRotation(int delta);
@@ -18,7 +19,6 @@ namespace Angle
     private:
 		void InitializeShaders();
 		void InitializeBuffers();
-		std::future<void> LoadTextureAsync();
 
         GLuint mProgram;
         GLsizei mWindowWidth;
@@ -43,5 +43,7 @@ namespace Angle
 
         int mDrawCount;
 		bool mInitialized;
+
+		std::shared_ptr<TextureManager> mTextureManager;
     };
 }

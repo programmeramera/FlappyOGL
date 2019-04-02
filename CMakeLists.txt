@@ -45,6 +45,8 @@ set(SOURCE_FILES
     source/SpriteRenderer.h
     source/OpenGLHelper.cpp
     source/OpenGLHelper.h
+    source/TextureManager.h
+    source/TextureManager.cpp
     source/pch.cpp
     source/pch.h
     ${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME}

@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "OpenGLES.h"
-#include "SimpleRenderer.h"
+#include "TextureManager.h"
 #include "SpriteRenderer.h"
 
 using namespace winrt; 
@@ -54,7 +54,10 @@ namespace Angle {
 		void Run()
 		{
 			auto dispatcher = CoreWindow::GetForCurrentThread().Dispatcher();
-			mSpriteRenderer->InitializeAsync();
+			std::vector<std::wstring> filenames = { L"checker.bmp" };
+			mTextureManager->LoadTexturesAsync(filenames);
+			
+			//mSpriteRenderer->InitializeAsync();
 
 			while (!mWindowClosed)
 			{
@@ -99,9 +102,12 @@ namespace Angle {
 			//{
 			//	mCubeRenderer.reset(new SimpleRenderer());
 			//}
+			if (!mTextureManager) {
+				mTextureManager = std::make_shared<TextureManager>();
+			}
 			if (!mSpriteRenderer)
 			{
-				mSpriteRenderer.reset(new SpriteRenderer());
+				mSpriteRenderer.reset(new SpriteRenderer(mTextureManager));
 			}
 		}
 
@@ -135,12 +141,14 @@ namespace Angle {
 		EGLSurface mEglSurface;
 
 		std::unique_ptr<OpenGLES> mOpenGLES;
-		std::unique_ptr<SimpleRenderer> mCubeRenderer;
+//		std::unique_ptr<SimpleRenderer> mCubeRenderer;
 		std::unique_ptr<SpriteRenderer> mSpriteRenderer;
+		std::shared_ptr<TextureManager> mTextureManager;
 	};
 }
 
 int __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 {
+	winrt::init_apartment();
 	CoreApplication::Run(make<Angle::App>());
 }
