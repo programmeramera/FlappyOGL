@@ -36,6 +36,7 @@ configure_file(
 set(SOURCE_FILES
     source/App.cpp
     source/angle.h
+    source/angle.cpp
     source/MathHelper.h
     source/OpenGLES.cpp
     source/OpenGLES.h

@@ -15,3 +15,5 @@
 
 // ANGLE include for Windows Store
 #include <angle_windowsstore.h>
+
+void cglActiveTexture(GLenum texture);

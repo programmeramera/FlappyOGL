@@ -1,7 +1,6 @@
 #pragma once
 
 #include <future>
-#include "angle.h"
 #include "TextureManager.h"
 
 namespace Angle
@@ -11,7 +10,7 @@ namespace Angle
     public:
 		SpriteRenderer(std::shared_ptr<TextureManager> textureManager);
         ~SpriteRenderer();
-		winrt::fire_and_forget Initialize();
+		void Initialize();
         void Draw();
         void UpdateWindowSize(GLsizei width, GLsizei height);
 		void UpdateRotation(int delta);

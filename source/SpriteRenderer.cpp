@@ -20,8 +20,7 @@ SpriteRenderer::SpriteRenderer(std::shared_ptr<TextureManager> textureManager)
 	, mInitialized(false)
 	, mTextureManager(textureManager)
 {
-	//InitializeShaders();
-	//InitializeBuffers();
+	Initialize();
 }
 
 SpriteRenderer::~SpriteRenderer()
@@ -185,18 +184,19 @@ void SpriteRenderer::InitializeBuffers() {
 	//   255, 255,   0, 255, // Yellow
 	//};
 
-winrt::fire_and_forget SpriteRenderer::Initialize()
+void SpriteRenderer::Initialize()
 {
+	//vector<wstring> filenames = { L"checker.bmp" };
+	//co_await mTextureManager->LoadTexturesAsync(filenames);
+
 	InitializeShaders();
 	InitializeBuffers();
-	vector<wstring> filenames = { L"checker.bmp" };
-	co_await mTextureManager->LoadTexturesAsync(filenames);
 	mInitialized = true;
 }
 
 void SpriteRenderer::Draw()
 {
-	if (!mInitialized) {
+	if (!mInitialized || !mTextureManager->IsLoaded()) {
 		return;
 	}
 	// Clear the color buffer   
@@ -227,7 +227,7 @@ void SpriteRenderer::Draw()
 	MathHelper::Vector2 textureSize(texture.Width, texture.Height);
 	glUniform2fv(mTextureSizeUniformLocation, 1, &(textureSize.m[0]));
 
-	glActiveTexture(GL_TEXTURE0);
+	cglActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture.TextureIndex);
 
 	// Set the sampler texture unit to 0
