@@ -9,7 +9,7 @@ using namespace Windows::Storage;
 using namespace Windows::Storage::Streams;
 using namespace Windows::Graphics::Imaging;
 
-IAsyncAction TextureManager::LoadTexturesAsync(std::vector<std::wstring> filenames) {
+future<void> TextureManager::LoadTexturesAsync(std::vector<std::wstring> filenames) {
 	for (auto const& filename: filenames)
 	{
 		Texture2D texture = co_await LoadTextureAsync(filename);
@@ -49,7 +49,7 @@ IAsyncOperation<IStorageFile> TextureManager::LoadImageAsync(const wstring& file
 	auto folder = Windows::ApplicationModel::Package::Current().InstalledLocation();
 	auto path = folder.Path().c_str();
 	auto file = co_await folder.TryGetItemAsync(filename);
-	return file.as<IStorageFile>();
+	co_return file.as<IStorageFile>();
 }
 
 IAsyncOperation<PixelDataProvider> TextureManager::GetPixelDataFromImageAsync(IStorageFile file, int& width, int& height) {
@@ -62,50 +62,37 @@ IAsyncOperation<PixelDataProvider> TextureManager::GetPixelDataFromImageAsync(IS
 	co_return pixelData;
 }
 
-future<GLubyte*> TextureManager::GetPixelsFromPixelDataProvider(const PixelDataProvider& pixelDataProvider) {
+vector<GLubyte> TextureManager::GetPixelsFromPixelDataProvider(const PixelDataProvider& pixelDataProvider) {
 	auto dpPixels = pixelDataProvider.DetachPixelData();
 	auto size = dpPixels.size();
-	GLubyte* pixels = new GLubyte[size];
-	std::vector<unsigned char> vPixels(dpPixels.begin(), dpPixels.end());
-	memcpy(pixels, &(vPixels[0]), size);
-	co_return pixels;
+	std::vector<GLubyte> vPixels(dpPixels.begin(), dpPixels.end());
+	return vPixels;
 }
 
 future<Texture2D> TextureManager::LoadTextureAsync(std::wstring filename) {
-	// Load the texture
 	Texture2D texture;
 	int width, height;
-	
+
+	texture.Name = filename;
+
 	// Load file
-	auto folder = Windows::ApplicationModel::Package::Current().InstalledLocation();
-	auto path = folder.Path().c_str();
-	auto item = co_await folder.TryGetItemAsync(filename);
-	auto file = item.as<IStorageFile>();
+	auto file = co_await LoadImageAsync(filename);
 
 	// Get PixelDataProvider
-	auto stream = co_await file.OpenAsync(FileAccessMode::Read);
-	auto decoder = co_await BitmapDecoder::CreateAsync(stream);
-	auto bitmap = co_await decoder.GetSoftwareBitmapAsync();
-	width = bitmap.PixelWidth();
-	height = bitmap.PixelHeight();
-	auto pixelData = co_await decoder.GetPixelDataAsync(BitmapPixelFormat::Rgba8, BitmapAlphaMode::Straight, BitmapTransform(), ExifOrientationMode::IgnoreExifOrientation, ColorManagementMode::DoNotColorManage);
+	auto pixelData = co_await GetPixelDataFromImageAsync(file, width, height);
 
-	// Get Pixels
-	auto dpPixels = pixelData.DetachPixelData();
-	auto size = dpPixels.size();
-
-	GLubyte* pixels = new GLubyte[size];
-	//std::vector<unsigned char> vPixels(dpPixels.begin(), dpPixels.end());
-	memcpy(pixels, &(dpPixels[0]), size);
-
-	GLuint textureIndex = CreateTexture(pixels, width, height);
-	
-	delete (pixels);
-
-	texture.TextureIndex = textureIndex;
-	texture.Name = filename;
 	texture.Width = width;
 	texture.Height = height;
+
+	// Get Pixels
+	auto dpPixels = GetPixelsFromPixelDataProvider(pixelData);
+	auto size = dpPixels.size();
+
+	auto pixels = new GLubyte[size];
+	memcpy(pixels, &(dpPixels[0]), size);
+	texture.TextureIndex = CreateTexture(pixels, width, height);
+	delete (pixels);
+
 	co_return texture;
 }
 
