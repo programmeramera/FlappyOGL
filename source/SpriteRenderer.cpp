@@ -209,10 +209,12 @@ void SpriteRenderer::Draw()
 	glEnableVertexAttribArray(mVertexAttribLocation);
 	glVertexAttribPointer(mVertexAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-	MathHelper::Vector4 spriteRect(0.0f, 0.0f, 64.0f, 64.0f);
+	auto texture = mTextureManager->GetTexture(L"checker.bmp");
+
+	MathHelper::Vector4 spriteRect(0.0f, 0.0f, texture.Width, texture.Height);
 	glUniform4fv(mSpriteRectUniformLocation, 1, &(spriteRect.m[0]));
 
-	MathHelper::Vector2 spriteWorld(100.0f, 100.0f);
+	MathHelper::Vector2 spriteWorld(200.0f, 200.0f);
 	glUniform2fv(mSpriteWorldUniformLocation, 1, &(spriteWorld.m[0]));
 
 	MathHelper::Vector2 screenSize(static_cast<float>(mWindowWidth), static_cast<float>(mWindowHeight));
@@ -221,8 +223,6 @@ void SpriteRenderer::Draw()
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexUVBuffer);
 	glEnableVertexAttribArray(mUVAttribLocation);
 	glVertexAttribPointer(mUVAttribLocation, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-	auto texture = mTextureManager->GetTexture(L"checker.bmp");
 
 	MathHelper::Vector2 textureSize(texture.Width, texture.Height);
 	glUniform2fv(mTextureSizeUniformLocation, 1, &(textureSize.m[0]));

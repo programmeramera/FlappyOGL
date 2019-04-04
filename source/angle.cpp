@@ -2,8 +2,8 @@
 
 void cglActiveTexture(GLenum texture)
 {
-#if _DEBUG
-	OutputDebugString(L"glActiveTexture\n");
-#endif
+//#if _DEBUG
+//	OutputDebugString(L"glActiveTexture\n");
+//#endif
 	glActiveTexture(texture);
 }

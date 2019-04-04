@@ -54,7 +54,7 @@ namespace Angle {
 		void Run()
 		{
 			auto dispatcher = CoreWindow::GetForCurrentThread().Dispatcher();
-			std::vector<std::wstring> filenames = { L"checker.bmp" };
+			std::vector<std::wstring> filenames = { L"checker.bmp", L"checkersmall.bmp" };
 			mTextureManager->LoadTexturesAsync(filenames);
 			
 			//mSpriteRenderer->Initialize();

@@ -24,14 +24,17 @@ GLuint TextureManager::CreateTexture(GLubyte* pixels, GLsizei width, GLsizei hei
 	// Texture object handle
 	GLuint textureId;
 
-	// Use tightly packed data
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	//// Use tightly packed data
+	//glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 	// Generate a texture object
 	glGenTextures(1, &textureId);
+	CheckOpenGLError();
 
 	// Bind the texture object
 	glBindTexture(GL_TEXTURE_2D, textureId);
+	glPixelStorei(GL_PACK_ALIGNMENT, textureId);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, textureId);
 	CheckOpenGLError();
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
