@@ -153,42 +153,9 @@ void SpriteRenderer::InitializeBuffers() {
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexUVBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexUVs), vertexUVs, GL_STATIC_DRAW);
 }
-//
-//IAsyncOperation<PixelDataProvider> ReadImageAsync(const wstring& filename) {
-//	auto folder = Windows::ApplicationModel::Package::Current().InstalledLocation();
-//	auto path = folder.Path().c_str();
-//	auto file = co_await folder.TryGetItemAsync(filename);
-//	auto stream = co_await file.as<IStorageFile>().OpenAsync(FileAccessMode::Read);
-//
-//	auto decoder = co_await BitmapDecoder::CreateAsync(stream);
-//	auto bitmap = co_await decoder.GetSoftwareBitmapAsync();
-//	return co_await decoder.GetPixelDataAsync(BitmapPixelFormat::Rgba8, BitmapAlphaMode::Straight, BitmapTransform(), ExifOrientationMode::IgnoreExifOrientation, ColorManagementMode::DoNotColorManage);
-//}
-
-
-//future<vector<unsigned char>> GetPixelsFromImageAsync(IStorageFile file, int& width, int& height) {
-//	auto pixelData = co_await GetPixelDataFromImageAsync(file, width, height);
-//	auto dpPixels = pixelData.DetachPixelData();
-//	vector<unsigned char> pixels(dpPixels.begin(), dpPixels.end());
-//	return pixels;
-//}
-
-
-
-// 2x2 Image, 3 bytes per pixel (R, G, B, A)
-	//GLubyte pixels[4 * 4] =
-	//{
-	//   38,   52,   68, 255, // Red
-	//	 0, 255,   0, 255, // Green
-	//	 0,   0, 255, 255, // Blue
-	//   255, 255,   0, 255, // Yellow
-	//};
 
 void SpriteRenderer::Initialize()
 {
-	//vector<wstring> filenames = { L"checker.bmp" };
-	//co_await mTextureManager->LoadTexturesAsync(filenames);
-
 	InitializeShaders();
 	InitializeBuffers();
 	mInitialized = true;
@@ -200,7 +167,7 @@ void SpriteRenderer::Draw()
 		return;
 	}
 	// Clear the color buffer   
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	cglClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	// Use the program object
 	glUseProgram(mProgram);
@@ -209,9 +176,9 @@ void SpriteRenderer::Draw()
 	glEnableVertexAttribArray(mVertexAttribLocation);
 	glVertexAttribPointer(mVertexAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-	auto texture = mTextureManager->GetTexture(L"checker.bmp");
+	auto texture = mTextureManager->GetTexture(L"checkersmall.bmp");
 
-	MathHelper::Vector4 spriteRect(0.0f, 0.0f, texture.Width, texture.Height);
+	MathHelper::Vector4 spriteRect(0.0f, 0.0f, 100.0f, 100.0f);
 	glUniform4fv(mSpriteRectUniformLocation, 1, &(spriteRect.m[0]));
 
 	MathHelper::Vector2 spriteWorld(200.0f, 200.0f);
@@ -239,8 +206,9 @@ void SpriteRenderer::Draw()
 
 void SpriteRenderer::UpdateWindowSize(GLsizei width, GLsizei height)
 {
-	if (!mInitialized)
+	if (!mInitialized || !mTextureManager->IsLoaded()) {
 		return;
+	}
 
     glViewport(0, 0, width, height);
     mWindowWidth = width;

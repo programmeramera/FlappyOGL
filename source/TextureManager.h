@@ -18,7 +18,11 @@ public:
 class TextureManager {
 
 public:
-    std::future<void> LoadTexturesAsync(std::vector<std::wstring> filename);
+	TextureManager(winrt::Windows::UI::Core::CoreDispatcher dispatcher)
+		: mIsLoaded(false)
+		, mDispatcher(dispatcher) { }
+
+	winrt::fire_and_forget LoadTexturesAsync(std::vector<std::wstring> filename);
 	Texture2D GetTexture(std::wstring filename);
 	bool IsLoaded() { return mIsLoaded; }
 
@@ -27,8 +31,13 @@ private:
 	winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::Storage::IStorageFile> LoadImageAsync(const std::wstring& filename);
 	winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::Graphics::Imaging::PixelDataProvider> GetPixelDataFromImageAsync(winrt::Windows::Storage::IStorageFile file, int& width, int& height);
 	std::vector<GLubyte> GetPixelsFromPixelDataProvider(const winrt::Windows::Graphics::Imaging::PixelDataProvider& pixelDataProvider);
-	std::future<Texture2D> LoadTextureAsync(std::wstring filename);
+	//std::future<Texture2D> LoadTextureAsync(std::wstring filename);
+	std::future<void> LoadTextureAsync(Texture2D& texture);
+
+	GLuint GenerateTexture();
+	void SetTexturePixels(GLuint textureId, GLsizei width, GLsizei height, GLubyte* pixels);
 
 	bool mIsLoaded;
     std::map<std::wstring, Texture2D> mTextures;
+	winrt::Windows::UI::Core::CoreDispatcher mDispatcher;
 };

@@ -54,7 +54,7 @@ namespace Angle {
 		void Run()
 		{
 			auto dispatcher = CoreWindow::GetForCurrentThread().Dispatcher();
-			std::vector<std::wstring> filenames = { L"checker.bmp", L"checkersmall.bmp" };
+			std::vector<std::wstring> filenames = { L"checkersmall.bmp", L"checker.bmp" };
 			mTextureManager->LoadTexturesAsync(filenames);
 			
 			//mSpriteRenderer->Initialize();
@@ -103,7 +103,7 @@ namespace Angle {
 			//	mCubeRenderer.reset(new SimpleRenderer());
 			//}
 			if (!mTextureManager) {
-				mTextureManager = std::make_shared<TextureManager>();
+				mTextureManager = std::make_shared<TextureManager>(CoreWindow::GetForCurrentThread().Dispatcher());
 			}
 			if (!mSpriteRenderer)
 			{

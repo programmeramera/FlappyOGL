@@ -7,3 +7,7 @@ void cglActiveTexture(GLenum texture)
 //#endif
 	glActiveTexture(texture);
 }
+
+void cglClearColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha) {
+	glClearColor(red, green, blue, alpha);
+}

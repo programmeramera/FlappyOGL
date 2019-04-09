@@ -17,3 +17,4 @@
 #include <angle_windowsstore.h>
 
 void cglActiveTexture(GLenum texture);
+void cglClearColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
